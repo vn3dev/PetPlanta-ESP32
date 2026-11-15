@@ -15,14 +15,14 @@
  *   plus live particles (snow, rain, stars, fireflies, butterflies, birds, confetti, party lights, motes...).
  * - The background switches together with the plant, with the same dither dissolve.
  * Party mode
- * - A party state with a beat definition can be synchronized to an audio element. Its timeline can
- *   switch to choreography move sheets while the regular party loop remains the fallback.
+ * - The party state uses its regular loop and scene effects. Audio playback is
+ *   independent, so a slow mobile decoder cannot block the canvas animation.
  * Users with "reduce motion" enabled get instant swaps and a still background.
  */
 (function () {
   const BAYER = [0, 8, 2, 10, 12, 4, 14, 6, 3, 11, 1, 9, 15, 7, 13, 5];
   const PHASE = { stars: 'sky', snow: 'out', rain: 'out', glassdrops: 'out', butterflies: 'out', birds: 'out', fireflies: 'out',
-                  confetti: 'in', motes: 'in', leaves: 'in', lights: 'in' };
+                  confetti: 'in', motes: 'in', leaves: 'in', lights: 'in', stage: 'in' };
 
   function rng(seed) { return function () { seed |= 0; seed = seed + 0x6D2B79F5 | 0; let t = Math.imul(seed ^ seed >>> 15, 1 | seed); t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296; }; }
 
@@ -86,9 +86,12 @@
       return { ...def, list, phase: PHASE[def.type], G };
     }
 
-    syncAudio(audio, beat) {
-      this.audio = audio || null;
-      this.beatOverride = beat || null;
+    syncAudio() {
+      // A musica e a animacao rodam de forma independente. Mantemos o metodo
+      // apenas por compatibilidade com paginas antigas em cache, mas ele nao
+      // conecta mais o elemento Audio ao loop de renderizacao.
+      this.audio = null;
+      this.beatOverride = null;
       return this;
     }
 
@@ -259,6 +262,7 @@
             px(x, y, '#a07a3a'); px(x + (flip ? 1 : -1), y, '#c9a05a'); px(x, y - 1, '#7d5a2a');
           }
         }
+        if (P.type === 'stage') this._stage(ctx, t);
         if (P.type === 'lights') {
           const beats = this._beatOf('party');
           const cols = ['#ff5c8a', '#ffd23f', '#4aa8e8', '#7ed957', '#c07cf2'];
@@ -276,6 +280,65 @@
       }
     }
 
+    _stage(ctx, t) {
+      const [W, H] = this.sc.size;
+      if (!this.beamCtx) {
+        this.beamCtx = this._ctx(W, H);
+        this.beamImg = this.beamCtx.createImageData(W, H);
+      }
+      const beats = this._beatOf('party');
+      const beatTime = beats !== null ? beats : t * 79.178 / 60;
+      const bar = Math.floor(beatTime / 4);
+      const fraction = beatTime - Math.floor(beatTime);
+      const pulse = 0.45 + 0.55 * Math.pow(1 - fraction, 2);
+      const colors = [[255, 79, 163], [79, 195, 255], [255, 210, 63], [155, 107, 255], [93, 255, 155]];
+      const data = this.beamImg.data;
+      data.fill(0);
+      const put = (x, y, color) => {
+        const i = (y * W + x) * 4;
+        data[i] = color[0]; data[i + 1] = color[1]; data[i + 2] = color[2]; data[i + 3] = 255;
+      };
+
+      const glowColor = colors[(bar + 2) % colors.length];
+      const glowX = 128, glowY = 76, glowRadius = 46;
+      for (let y = glowY - glowRadius; y <= glowY + glowRadius; y++) {
+        for (let x = glowX - glowRadius; x <= glowX + glowRadius; x++) {
+          if (x < 0 || y < 0 || x >= W || y >= H) continue;
+          const distance = Math.hypot(x - glowX, (y - glowY) * 1.15) / glowRadius;
+          if (distance < 1 && BAYER[(x & 3) + ((y & 3) << 2)] < 10 * (1 - distance) * (1 - distance)) {
+            put(x, y, glowColor);
+          }
+        }
+      }
+
+      const origins = [[34, 8], [86, 8], [170, 8], [222, 8]];
+      origins.forEach(([originX, originY], index) => {
+        const side = index < 2 ? 1 : -1;
+        const angle = Math.PI / 2 - side * (0.42 + 0.38 * Math.sin(2 * Math.PI * beatTime / 8 + index * 1.9));
+        const color = colors[(index + bar) % colors.length];
+        const slope = Math.cos(angle) / Math.sin(angle);
+        for (let y = originY; y < H; y++) {
+          const dy = y - originY;
+          const centerX = originX + dy * slope;
+          const halfWidth = 1 + dy * 0.11;
+          const thickness = 7 * (1 - 0.55 * dy / H);
+          for (let x = Math.floor(centerX - halfWidth); x <= Math.ceil(centerX + halfWidth); x++) {
+            if (x < 0 || x >= W) continue;
+            const edge = Math.abs(x - centerX) / halfWidth;
+            if (BAYER[(x & 3) + ((y & 3) << 2)] < (edge < 0.6 ? thickness : thickness * 0.4)) put(x, y, color);
+          }
+        }
+        for (let x = originX - 2; x <= originX + 2; x++) {
+          for (let y = originY - 3; y <= originY; y++) put(x, y, y === originY ? [255, 250, 220] : [40, 40, 56]);
+        }
+      });
+
+      this.beamCtx.putImageData(this.beamImg, 0, 0);
+      ctx.globalAlpha = 0.35 + 0.4 * pulse;
+      ctx.drawImage(this.beamCtx.canvas, 0, 0);
+      ctx.globalAlpha = 1;
+    }
+
     _scene(ctx, m, now) {
       const L = this.layers[m], d = this.sc.moods[m], [W, H] = this.sc.size;
       const t = this.reduce ? 0 : now / 1000;
@@ -288,7 +351,14 @@
       this._particles(ctx, L, 'out', t);
       ctx.drawImage(L.room, 0, 0);
       this._particles(ctx, L, 'in', t);
-      if (d.lightPulse) { ctx.globalAlpha = 0.7 + 0.3 * Math.sin(t * 1.2); ctx.drawImage(L.light, 0, 0); ctx.globalAlpha = 1; }
+      if (d.lightPulse) {
+        const beats = m === 'party' ? this._beatOf(m) : null;
+        ctx.globalAlpha = beats === null
+          ? 0.7 + 0.3 * Math.sin(t * 1.2)
+          : 0.45 + 0.55 * Math.pow(1 - (beats - Math.floor(beats)), 2);
+        ctx.drawImage(L.light, 0, 0);
+        ctx.globalAlpha = 1;
+      }
     }
 
     _draw(now) {

@@ -82,9 +82,16 @@
    "view": "party-view.png",
    "room": "party-room.png",
    "light": "party-light.png",
-   "cloudSpeed": 3,
-   "lightPulse": false,
+   "cloudSpeed": 2,
+   "lightPulse": true,
    "particles": [
+    {
+     "type": "stars",
+     "n": 16
+    },
+    {
+     "type": "stage"
+    },
     {
      "type": "lights",
      "points": [
@@ -164,7 +171,7 @@
     },
     {
      "type": "confetti",
-     "n": 28
+     "n": 22
     }
    ]
   },

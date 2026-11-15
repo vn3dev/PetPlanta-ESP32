@@ -1,0 +1,252 @@
+{
+ "size": [
+  256,
+  144
+ ],
+ "plant": {
+  "x": 96,
+  "y": 55
+ },
+ "glass": [
+  94,
+  20,
+  162,
+  109
+ ],
+ "panes": [
+  [
+   94,
+   20,
+   162,
+   43
+  ],
+  [
+   94,
+   47,
+   115,
+   109
+  ],
+  [
+   118,
+   47,
+   138,
+   109
+  ],
+  [
+   141,
+   47,
+   162,
+   109
+  ]
+ ],
+ "cloudY": 21,
+ "moods": {
+  "happy": {
+   "sky": "happy-sky.png",
+   "clouds": "happy-clouds.png",
+   "view": "happy-view.png",
+   "room": "happy-room.png",
+   "light": "happy-light.png",
+   "cloudSpeed": 4,
+   "lightPulse": true,
+   "particles": [
+    {
+     "type": "butterflies",
+     "n": 2
+    }
+   ]
+  },
+  "sunny": {
+   "sky": "sunny-sky.png",
+   "clouds": "sunny-clouds.png",
+   "view": "sunny-view.png",
+   "room": "sunny-room.png",
+   "light": "sunny-light.png",
+   "cloudSpeed": 3,
+   "lightPulse": true,
+   "particles": [
+    {
+     "type": "birds",
+     "n": 3
+    },
+    {
+     "type": "motes",
+     "n": 16,
+     "color": "fff4b0"
+    }
+   ]
+  },
+  "party": {
+   "sky": "party-sky.png",
+   "clouds": "party-clouds.png",
+   "view": "party-view.png",
+   "room": "party-room.png",
+   "light": "party-light.png",
+   "cloudSpeed": 2,
+   "lightPulse": true,
+   "particles": [
+    {
+     "type": "stars",
+     "n": 16
+    },
+    {
+     "type": "stage"
+    },
+    {
+     "type": "lights",
+     "points": [
+      [
+       32,
+       17
+      ],
+      [
+       43,
+       19
+      ],
+      [
+       54,
+       20
+      ],
+      [
+       65,
+       22
+      ],
+      [
+       76,
+       23
+      ],
+      [
+       87,
+       24
+      ],
+      [
+       98,
+       25
+      ],
+      [
+       109,
+       26
+      ],
+      [
+       120,
+       26
+      ],
+      [
+       131,
+       26
+      ],
+      [
+       142,
+       26
+      ],
+      [
+       153,
+       25
+      ],
+      [
+       164,
+       25
+      ],
+      [
+       175,
+       24
+      ],
+      [
+       186,
+       22
+      ],
+      [
+       197,
+       21
+      ],
+      [
+       208,
+       20
+      ],
+      [
+       219,
+       18
+      ]
+     ]
+    },
+    {
+     "type": "confetti",
+     "n": 22
+    }
+   ]
+  },
+  "cold": {
+   "sky": "cold-sky.png",
+   "clouds": "cold-clouds.png",
+   "view": "cold-view.png",
+   "room": "cold-room.png",
+   "light": "cold-light.png",
+   "cloudSpeed": 2,
+   "lightPulse": false,
+   "particles": [
+    {
+     "type": "snow",
+     "n": 46
+    }
+   ]
+  },
+  "sleep": {
+   "sky": "sleep-sky.png",
+   "clouds": "sleep-clouds.png",
+   "view": "sleep-view.png",
+   "room": "sleep-room.png",
+   "light": "sleep-light.png",
+   "cloudSpeed": 2,
+   "lightPulse": true,
+   "particles": [
+    {
+     "type": "stars",
+     "n": 22
+    },
+    {
+     "type": "fireflies",
+     "n": 5
+    }
+   ]
+  },
+  "dry": {
+   "sky": "dry-sky.png",
+   "clouds": "dry-clouds.png",
+   "view": "dry-view.png",
+   "room": "dry-room.png",
+   "light": "dry-light.png",
+   "cloudSpeed": 1.5,
+   "lightPulse": true,
+   "particles": [
+    {
+     "type": "motes",
+     "n": 14,
+     "color": "e2c08a"
+    },
+    {
+     "type": "leaves",
+     "n": 3
+    }
+   ]
+  },
+  "sick": {
+   "sky": "sick-sky.png",
+   "clouds": "sick-clouds.png",
+   "view": "sick-view.png",
+   "room": "sick-room.png",
+   "light": "sick-light.png",
+   "cloudSpeed": 6,
+   "lightPulse": false,
+   "particles": [
+    {
+     "type": "rain",
+     "n": 44
+    },
+    {
+     "type": "glassdrops",
+     "n": 7
+    }
+   ]
+  }
+ }
+}

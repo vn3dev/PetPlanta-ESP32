@@ -1,0 +1,50 @@
+<!doctype html>
+<html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Pet Planta</title>
+<style>
+body{margin:0;font-family:system-ui,sans-serif;background:#2b2622;color:#f3ead8;display:flex;flex-direction:column;align-items:center;gap:16px;padding:24px 16px}
+canvas{image-rendering:pixelated;width:min(100%,1024px);aspect-ratio:16/9;border-radius:12px;box-shadow:0 8px 30px #0006}
+.btns{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;max-width:1024px}
+button{font:inherit;padding:8px 14px;border:0;border-radius:8px;background:#4f9a3e;color:#fff;cursor:pointer}
+button.on{background:#f7c531;color:#2b2622}
+.music{display:flex;gap:10px;align-items:center;flex-wrap:wrap;justify-content:center;font-size:14px;opacity:.9}
+.music label{padding:8px 14px;border-radius:8px;background:#b04a8c;color:#fff;cursor:pointer}
+.music input{display:none}
+audio{height:32px}
+</style></head><body>
+<canvas id="c" width="256" height="144"></canvas>
+<div class="btns" id="b"></div>
+<div class="music">
+  <label>&#9835; escolher a música da festa<input type="file" id="song" accept="audio/*"></label>
+  <audio id="player" controls></audio>
+  <span id="info"></span>
+</div>
+<script src="../sprites/pet-planta.js"></script>
+<script>
+// No ESP32: sirva a pasta sprites/ (LittleFS) e chame pet.setMood('dry') etc. conforme os sensores.
+(async () => {
+  const pet = await new PetPlanta(document.getElementById('c'), { base: '../sprites/', scene: true }).load();
+  const box = document.getElementById('b');
+  const paint = (m) => box.querySelectorAll('button').forEach(b => b.classList.toggle('on', b.dataset.s === m));
+  for (const m of pet.moods) {
+    const b = document.createElement('button');
+    b.textContent = pet.sheets[m].label || m; b.dataset.s = m;
+    b.onclick = () => pet.setMood(m);
+    box.append(b);
+  }
+  pet.onchange = paint;
+  const q = new URLSearchParams(location.search).get('mood');
+  pet.start(q && pet.sheets[q] ? q : undefined); paint(pet.mood);
+  window.pet = pet;
+  // music: the song is not shipped; pick the file and the party dance locks to its beat
+  const audio = document.getElementById('player'), info = document.getElementById('info');
+  pet.syncAudio(audio);
+  document.getElementById('song').onchange = (e) => {
+    const f = e.target.files[0]; if (!f) return;
+    audio.src = URL.createObjectURL(f); audio.play(); pet.setMood('party');
+  };
+  audio.onplay = () => pet.setMood('party');
+  const NOMES = { sweep: 'braçada', swoon: 'desmaio', spin: 'giro', stomp: 'pisada', hunch: 'corcunda', raise: 'braço erguido', point: 'apontando' };
+  setInterval(() => { info.textContent = (!audio.paused && pet.mood === 'party') ? ('dançando: ' + (NOMES[pet.move] || 'balanço')) : ''; }, 250);
+})();
+</script></body></html>

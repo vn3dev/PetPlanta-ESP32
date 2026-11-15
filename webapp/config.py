@@ -80,7 +80,7 @@ REGA_DETECTADA_MIN = 300
 # "desconectado" na interface.
 READING_STALE_AFTER = 6.0  # segundos
 
-# --- Duracao das animacoes (deve combinar com generate_assets.py) ---
+# --- Duracao das transicoes do front-end ---
 TRANSITION_FRAMES = 8
 TRANSITION_FRAME_MS = 90
 TRANSITION_DURATION_MS = TRANSITION_FRAMES * TRANSITION_FRAME_MS
@@ -106,10 +106,9 @@ MOOD_LABELS = {
     "festa": "Modo festa!",
 }
 
-# Cor de fundo de cada GIF (tem que ser EXATAMENTE igual ao dict BG em
-# generate_assets.py), usada pelo front-end pra estender a cor de fundo do
-# bichinho por toda a tela. Se regerar a arte com cores de fundo diferentes,
-# atualize aqui tambem.
+# Cores de fallback associadas a cada estado. O front-end usa os cenarios em
+# static/pet-planta/sprites/bg e consulta este mapa quando precisa de uma cor
+# solida complementar.
 MOOD_BG = {
     "feliz": "rgb(224, 247, 217)",
     "seca": "rgb(250, 240, 205)",

@@ -1,0 +1,76 @@
+{
+  "project": "pet-planta",
+  "reference": "run/source/reference-sheet.jpg",
+  "base_reference_crops": "run/source/refs/",
+  "scope": {
+    "cells": [
+      64
+    ],
+    "directions": [
+      "south"
+    ],
+    "columns": 8,
+    "actions": [
+      "happy",
+      "party",
+      "sunny",
+      "cold",
+      "sleep",
+      "dry",
+      "sick"
+    ],
+    "chroma_key": "#ff00ff",
+    "target": "web app + ESP32"
+  },
+  "strips": {
+    "happy-south": {
+      "frames": 8,
+      "source": "sprites/happy/happy-sheet.png",
+      "method": "code_drawn",
+      "tool": "tools/gen_plant.py v2 (Pillow)",
+      "status": "accepted"
+    },
+    "party-south": {
+      "frames": 8,
+      "source": "sprites/party/party-sheet.png",
+      "method": "code_drawn",
+      "tool": "tools/gen_plant.py v2 (Pillow)",
+      "status": "accepted"
+    },
+    "sunny-south": {
+      "frames": 8,
+      "source": "sprites/sunny/sunny-sheet.png",
+      "method": "code_drawn",
+      "tool": "tools/gen_plant.py v2 (Pillow)",
+      "status": "accepted"
+    },
+    "cold-south": {
+      "frames": 8,
+      "source": "sprites/cold/cold-sheet.png",
+      "method": "code_drawn",
+      "tool": "tools/gen_plant.py v2 (Pillow)",
+      "status": "accepted"
+    },
+    "sleep-south": {
+      "frames": 8,
+      "source": "sprites/sleep/sleep-sheet.png",
+      "method": "code_drawn",
+      "tool": "tools/gen_plant.py v2 (Pillow)",
+      "status": "accepted"
+    },
+    "dry-south": {
+      "frames": 8,
+      "source": "sprites/dry/dry-sheet.png",
+      "method": "code_drawn",
+      "tool": "tools/gen_plant.py v2 (Pillow)",
+      "status": "accepted"
+    },
+    "sick-south": {
+      "frames": 8,
+      "source": "sprites/sick/sick-sheet.png",
+      "method": "code_drawn",
+      "tool": "tools/gen_plant.py v2 (Pillow)",
+      "status": "accepted"
+    }
+  }
+}

@@ -1,0 +1,19 @@
+{
+  "state": "happy",
+  "label": "feliz (padrao)",
+  "image": "happy-sheet.png",
+  "frameWidth": 64,
+  "frameHeight": 64,
+  "frames": 8,
+  "columns": 8,
+  "rows": 1,
+  "frameDurationMs": 150,
+  "loop": true,
+  "anchor": {
+    "x": 32,
+    "y": 60,
+    "note": "bottom-center of the pot, fixed in all frames"
+  },
+  "method": "code_drawn",
+  "generator": "tools/gen_plant.py"
+}

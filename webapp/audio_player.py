@@ -8,6 +8,7 @@ e garante que a musica seja encerrada ao sair do modo festa.
 
 import ctypes
 import os
+import queue
 import threading
 import time
 from pathlib import Path
@@ -22,6 +23,8 @@ _MODO_ATUAL = "live"
 _CONTEXTO_ATUAL = 0
 _CLIENTES_DESKTOP = {}
 _CLIENTE_TIMEOUT_S = 5.0
+_FILA_PLAYER = queue.Queue(maxsize=1)
+_THREAD_PLAYER = None
 _ALIAS = "petplanta_audio"
 _ALIASES_ANTIGOS = ("petplanta_festa",)
 _PASTA_AUDIO = Path(__file__).resolve().parent / "static" / "audio"
@@ -99,6 +102,60 @@ def _reproduzir_windows(humor):
         print(f"[PetPlanta] Audio iniciado: {arquivo.name}")
 
 
+def _enfileirar_player(acao, humor=None, contexto=None):
+    """Enfileira somente o comando mais recente do player.
+
+    As chamadas MCI podem demorar ao abrir um MP3. Elas rodam fora de
+    ``_LOCK`` para que /api/state, /api/audio e /api/mode continuem respondendo.
+    Um comando novo substitui os antigos ainda não processados.
+    """
+    while True:
+        try:
+            _FILA_PLAYER.get_nowait()
+        except queue.Empty:
+            break
+    try:
+        _FILA_PLAYER.put_nowait((acao, humor, contexto))
+    except queue.Full:
+        pass
+
+
+def _thread_do_player():
+    while True:
+        acao, humor, contexto = _FILA_PLAYER.get()
+        try:
+            if acao == "stop":
+                if os.name == "nt":
+                    _parar_windows()
+                continue
+
+            if acao != "play" or os.name != "nt":
+                continue
+
+            with _LOCK:
+                valido = (
+                    contexto == _CONTEXTO_ATUAL
+                    and _HABILITADO
+                    and humor == _HUMOR_ATUAL
+                    and _tem_cliente_desktop_locked()
+                )
+            if valido:
+                _reproduzir_windows(humor)
+        except Exception as exc:
+            print(f"[PetPlanta] Falha no player de audio: {exc}")
+
+
+def _iniciar_thread_player():
+    global _THREAD_PLAYER
+    if _THREAD_PLAYER is None:
+        _THREAD_PLAYER = threading.Thread(
+            target=_thread_do_player,
+            daemon=True,
+            name="petplanta-audio-player",
+        )
+        _THREAD_PLAYER.start()
+
+
 def set_enabled(enabled):
     """Habilita ou desabilita o audio do notebook."""
     global _HABILITADO
@@ -107,11 +164,11 @@ def set_enabled(enabled):
         if os.name != "nt":
             return
         if not _HABILITADO:
-            _parar_windows()
+            _enfileirar_player("stop")
             print("[PetPlanta] Audio do notebook desabilitado.")
         elif _HUMOR_ATUAL == "festa":
             # A musica volta ao reativar; efeitos curtos nao sao repetidos.
-            _reproduzir_windows(_HUMOR_ATUAL)
+            _enfileirar_player("play", _HUMOR_ATUAL, _CONTEXTO_ATUAL)
 
 
 def set_client_presence(client_id, present=True):
@@ -127,14 +184,14 @@ def set_client_presence(client_id, present=True):
             # Se a festa estava ativa enquanto a pagina estava fechada, ela
             # pode voltar a tocar assim que o notebook for reaberto.
             if not havia_clientes and _HABILITADO and _HUMOR_ATUAL == "festa":
-                _reproduzir_windows(_HUMOR_ATUAL)
+                _enfileirar_player("play", _HUMOR_ATUAL, _CONTEXTO_ATUAL)
         else:
             _CLIENTES_DESKTOP.pop(client_id, None)
             if not _tem_cliente_desktop_locked():
                 _HUMOR_ATUAL = None
                 _CONTEXTO_ATUAL += 1
                 if os.name == "nt":
-                    _parar_windows()
+                    _enfileirar_player("stop")
 
 
 def _presence_watchdog():
@@ -149,7 +206,7 @@ def _presence_watchdog():
                 # A ausencia do navegador invalida leituras de audio antigas.
                 _CONTEXTO_ATUAL += 1
                 if os.name == "nt":
-                    _parar_windows()
+                    _enfileirar_player("stop")
 
 
 def is_enabled():
@@ -176,7 +233,7 @@ def set_mood(humor, *, mode=None, context_id=None):
             return
         _HUMOR_ATUAL = humor
         if os.name == "nt" and _HABILITADO:
-            _reproduzir_windows(humor)
+            _enfileirar_player("play", humor, _CONTEXTO_ATUAL)
 
 
 def set_run_mode(mode):
@@ -194,7 +251,7 @@ def set_run_mode(mode):
         _CONTEXTO_ATUAL += 1
         _HUMOR_ATUAL = None
         if os.name == "nt":
-            _parar_windows()
+            _enfileirar_player("stop")
 
 
 def get_context():
@@ -205,7 +262,7 @@ def get_context():
 
 def set_festa(ativo):
     """Compatibilidade com chamadas antigas; prefira usar set_mood()."""
-    global _HUMOR_ATUAL
+    global _HUMOR_ATUAL, _CONTEXTO_ATUAL
     if ativo:
         set_mood("festa")
     else:
@@ -214,7 +271,8 @@ def set_festa(ativo):
                 _HUMOR_ATUAL = None
                 if os.name != "nt":
                     return
-                _parar_windows()
+                _CONTEXTO_ATUAL += 1
+                _enfileirar_player("stop")
 
 
 def stop():
@@ -224,12 +282,13 @@ def stop():
         _HUMOR_ATUAL = None
         _CONTEXTO_ATUAL += 1
         if os.name == "nt":
-            _parar_windows()
+            _enfileirar_player("stop")
 
 
 # Limpa qualquer alias do PetPlanta deixado por uma execucao anterior antes
 # de iniciar o watchdog e aceitar novas leituras.
+_iniciar_thread_player()
 if os.name == "nt":
-    _parar_windows()
+    _enfileirar_player("stop")
 
 threading.Thread(target=_presence_watchdog, daemon=True, name="petplanta-audio-watchdog").start()

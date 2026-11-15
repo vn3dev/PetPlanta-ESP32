@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 """
-Le os dados que o PetPlantaARDUINO.ino manda pela porta serial e mantem um
+Le os dados que o PetPlanta.ino manda pela porta serial e mantem um
 estado compartilhado e thread-safe com as ultimas leituras + o mood atual.
 
 Linha esperada (impressa pelo .ino a cada ~2s):

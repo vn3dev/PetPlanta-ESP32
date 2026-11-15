@@ -1,0 +1,24 @@
+{
+  "bpm": 79.178,
+  "beat_ms": 757.783,
+  "first_beat_s": 0.6517,
+  "downbeat_index": 2,
+  "first_downbeat_s": 2.1673,
+  "section_bpm_estimates": [
+    79.33,
+    79.2,
+    158.01,
+    79.23,
+    79.21,
+    79.23,
+    158.23
+  ],
+  "duration_s": 224.34,
+  "beats_in_song": 296,
+  "beat_strength_by_position": [
+    1.849,
+    1.65,
+    3.976,
+    1.147
+  ]
+}

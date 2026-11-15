@@ -1,0 +1,52 @@
+{
+  "cell": 64,
+  "reviewed_images": [
+    "previews/all-states-x4.png",
+    "run/64/qa/zoom.png",
+    "run/64/qa/gif-check.png"
+  ],
+  "rows": {
+    "happy-south": {
+      "accepted": true,
+      "matches_reference": true,
+      "action_ok": true,
+      "notes": "feliz (padrão): respira, balança a cabeça, pisca"
+    },
+    "party-south": {
+      "accepted": true,
+      "matches_reference": true,
+      "action_ok": true,
+      "notes": "festa: chapéu, olhos ^^, pulos com squash"
+    },
+    "sunny-south": {
+      "accepted": true,
+      "matches_reference": true,
+      "action_ok": true,
+      "notes": "sol: óculos escuros com brilho passando, balanço relaxado"
+    },
+    "cold-south": {
+      "accepted": true,
+      "matches_reference": true,
+      "action_ok": true,
+      "notes": "frio: azulado, pontas congeladas, olhos > <, dentes batendo, tremendo"
+    },
+    "sleep-south": {
+      "accepted": true,
+      "matches_reference": true,
+      "action_ok": true,
+      "notes": "dormindo: verde escuro, olhos fechados, cabeceando devagar"
+    },
+    "dry-south": {
+      "accepted": true,
+      "matches_reference": true,
+      "action_ok": true,
+      "notes": "seca: amarelada, folhas caídas com pontas secas, olhar cansado"
+    },
+    "sick-south": {
+      "accepted": true,
+      "matches_reference": true,
+      "action_ok": true,
+      "notes": "doente: murcha, olhos X, boca ondulada, tremor fraco"
+    }
+  }
+}

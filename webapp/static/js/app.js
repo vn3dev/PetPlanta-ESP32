@@ -137,9 +137,6 @@
 
     stopBrowserAudio();
     if (!moodAudio) moodAudio = new Audio();
-    if (petPlayer && typeof petPlayer.syncAudio === "function") {
-      petPlayer.syncAudio(moodAudio);
-    }
     moodAudio.src = `${url}?v=${audioGeneration}`;
     moodAudio.currentTime = 0;
     moodAudio.loop = mood === "festa";

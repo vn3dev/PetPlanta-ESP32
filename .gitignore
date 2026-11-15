@@ -1,0 +1,7 @@
+# Ambiente e arquivos gerados pelo Python
+webapp/.venv/
+webapp/__pycache__/
+webapp/**/*.pyc
+
+# Configuração local alterada pela interface
+webapp/config_overrides.json

@@ -28,10 +28,10 @@ O sketch inclui `WiFi`, `WebServer`, `DNSServer`, `ES32Lab` e `math`:
 
 ### Python
 
-No PowerShell:
+No PowerShell, a partir da pasta raiz do projeto:
 
 ```powershell
-cd C:\Users\vinic\Desktop\PetPlanta-Arduino\webapp
+cd .\webapp
 python -m venv .venv
 .\.venv\Scripts\Activate.ps1
 python -m pip install -r requirements.txt

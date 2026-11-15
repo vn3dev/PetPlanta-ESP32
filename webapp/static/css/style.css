@@ -1,33 +1,126 @@
+html {
+  height: 100%;
+  overflow: hidden;
+  overscroll-behavior: none;
+}
+
 * {
   box-sizing: border-box;
+}
+
+:root {
+  --ink: #f7fff6;
+  --ink-soft: rgba(247, 255, 246, 0.74);
+  --glass: rgba(20, 37, 29, 0.62);
+  --glass-border: rgba(255, 255, 255, 0.2);
+  --accent: #b7ef9e;
 }
 
 body {
   margin: 0;
   font-family: "Segoe UI", system-ui, sans-serif;
-  background-color: #ffffff;
-  color: #2b3a2f;
+  background: #17251d;
+  color: var(--ink);
   min-height: 100vh;
-  /* fundo branco fixo: somente a imagem do bichinho muda entre os moods. */
+  overflow-x: hidden;
+  height: 100%;
+  overflow: hidden;
+  overscroll-behavior: none;
 }
 
 header {
+  position: fixed;
+  z-index: 10;
+  top: 0;
+  left: 0;
+  right: 0;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 18px 28px;
-  background: transparent;
-  color: #2b3a2f;
+  padding: 22px clamp(18px, 4vw, 56px);
+  background: linear-gradient(180deg, rgba(8, 20, 13, 0.72), transparent);
+  color: var(--ink);
 }
 
 header h1 {
   margin: 0;
-  font-size: 1.5rem;
+  font-size: clamp(1.15rem, 2vw, 1.6rem);
+  letter-spacing: 0.02em;
+  text-shadow: 0 2px 12px rgba(0, 0, 0, 0.4);
 }
 
 #badges {
   display: flex;
+  align-items: center;
   gap: 8px;
+}
+
+.mode-control {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 8px;
+  border: 1px solid rgba(255, 255, 255, 0.22);
+  border-radius: 999px;
+  background: rgba(12, 29, 20, 0.52);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+}
+
+.mode-caption {
+  color: rgba(255, 255, 255, 0.62);
+  font-size: 0.62rem;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+}
+
+.mode-switch {
+  position: relative;
+  display: inline-block;
+  width: 36px;
+  height: 20px;
+  cursor: pointer;
+}
+
+.mode-switch input {
+  position: absolute;
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.mode-slider {
+  position: absolute;
+  inset: 0;
+  border-radius: 999px;
+  background: #2f7d3c;
+  transition: 0.2s ease;
+}
+
+.mode-slider::before {
+  content: "";
+  position: absolute;
+  width: 14px;
+  height: 14px;
+  left: 3px;
+  top: 3px;
+  border-radius: 50%;
+  background: #fff;
+  transition: 0.2s ease;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.35);
+}
+
+.mode-switch input:checked + .mode-slider {
+  background: #c98a2c;
+}
+
+.mode-switch input:checked + .mode-slider::before {
+  transform: translateX(16px);
+}
+
+.mode-switch input:focus-visible + .mode-slider {
+  outline: 2px solid #d8ffd0;
+  outline-offset: 2px;
 }
 
 .badge {
@@ -35,6 +128,8 @@ header h1 {
   padding: 4px 10px;
   border-radius: 999px;
   font-weight: 600;
+  color: #fff;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
 }
 
 .badge.offline {
@@ -54,51 +149,84 @@ header h1 {
 }
 
 main {
-  max-width: 760px;
-  margin: 0 auto;
-  padding: 24px 20px 60px;
+  position: relative;
+  z-index: 2;
+  min-height: 100vh;
+  min-height: 100svh;
+  height: 100vh;
+  height: 100svh;
+  overflow: hidden;
+  width: 100%;
+  padding: clamp(100px, 13vh, 150px) clamp(16px, 4vw, 64px) 34px;
   display: flex;
   flex-direction: column;
   align-items: center;
+  justify-content: flex-end;
 }
 
 .pet-card {
-  background: transparent;
-  box-shadow: none;
-  padding: 0;
-  margin-top: 8px;
+  position: fixed;
+  z-index: 0;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0;
   text-align: center;
   width: 100%;
+  max-width: none;
+  overflow: hidden;
+  pointer-events: none;
 }
 
-.pet-card img {
-  width: min(70vw, 420px);
-  height: min(70vw, 420px);
-  image-rendering: -webkit-optimize-contrast;
+.pet-card canvas {
+  display: block;
+  width: 100vw;
+  height: 100vh;
+  height: 100svh;
+  image-rendering: pixelated;
+  object-fit: cover;
+  object-position: center;
+  filter: saturate(1.08) contrast(1.03);
 }
 
 #mood-label {
-  margin-top: 4px;
+  position: relative;
+  z-index: 3;
+  margin: 0 auto clamp(18px, 4vh, 38px);
+  padding: 10px 28px;
+  border: 1px solid rgba(255, 255, 255, 0.34);
+  border-radius: 999px;
+  background: rgba(12, 29, 20, 0.7);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
   font-weight: 700;
-  font-size: 1.4rem;
-  color: #3f8d52;
+  font-size: clamp(1.35rem, 2.8vw, 2rem);
+  letter-spacing: 0.02em;
+  color: #fff;
+  text-align: center;
+  text-shadow: 0 2px 12px rgba(0, 0, 0, 0.8);
+  box-shadow: 0 10px 26px rgba(0, 0, 0, 0.22);
 }
 
 .sensors {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
-  gap: 14px;
-  margin-top: 28px;
+  gap: 12px;
+  margin: 0;
   width: 100%;
-  max-width: 560px;
+  max-width: 960px;
 }
 
 .sensor-card {
-  background: #fff;
-  border-radius: 16px;
-  padding: 14px;
+  background: var(--glass);
+  border: 1px solid var(--glass-border);
+  backdrop-filter: blur(14px) saturate(1.2);
+  -webkit-backdrop-filter: blur(14px) saturate(1.2);
+  border-radius: 18px;
+  padding: 13px 16px;
   text-align: center;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.2);
   display: flex;
   flex-direction: column;
   gap: 4px;
@@ -110,19 +238,19 @@ main {
 
 .sensor-card .label {
   font-size: 0.8rem;
-  color: #6a7c6d;
+  color: var(--ink-soft);
 }
 
 .sensor-card .value {
-  font-size: 1.3rem;
+  font-size: clamp(1.2rem, 2.5vw, 1.55rem);
   font-weight: 700;
-  color: #2b3a2f;
+  color: #fff;
 }
 
 .bar {
   width: 100%;
   height: 8px;
-  background: #e3e8e3;
+  background: rgba(255, 255, 255, 0.2);
   border-radius: 999px;
   overflow: hidden;
   margin-top: 4px;
@@ -140,24 +268,27 @@ main {
   margin-top: 2px;
   font-size: 0.72rem;
   font-weight: 700;
-  color: #b94f4f;
+  color: #ffe3df;
+  text-shadow: 0 1px 5px rgba(0, 0, 0, 0.65);
 }
 
 .countdown.critico {
-  color: #7a1f1f;
+  color: #fff4f1;
 }
 
 .ultima-rega {
   margin-top: 2px;
   font-size: 0.72rem;
   font-weight: 600;
-  color: #3f8d52;
+  color: #d8ffd0;
+  text-shadow: 0 1px 5px rgba(0, 0, 0, 0.65);
 }
 
 #footer-note {
-  margin-top: 22px;
+  margin: 12px 0 0;
   font-size: 0.8rem;
-  color: #7a8a7d;
+  color: var(--ink-soft);
+  text-shadow: 0 1px 8px rgba(0, 0, 0, 0.5);
 }
 
 /* --- Botao de engrenagem (header) --- */
@@ -169,11 +300,30 @@ main {
   line-height: 1;
   padding: 4px 6px;
   border-radius: 8px;
-  color: #2b3a2f;
+  color: var(--ink);
+  text-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
 }
 
 .icon-btn:hover {
-  background: rgba(0, 0, 0, 0.06);
+  background: rgba(255, 255, 255, 0.16);
+}
+
+.sound-toggle {
+  border: 1px solid rgba(255, 255, 255, 0.24);
+  border-radius: 999px;
+  padding: 5px 9px;
+  background: rgba(12, 29, 20, 0.48);
+  color: #fff;
+  cursor: pointer;
+  font-size: 1rem;
+  line-height: 1;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.18);
+}
+
+.sound-toggle:hover,
+.sound-toggle.active {
+  background: rgba(183, 239, 158, 0.28);
+  border-color: rgba(216, 255, 208, 0.72);
 }
 
 /* --- Modal de configuracoes --- */
@@ -334,4 +484,121 @@ main {
 
 .btn-secondary:hover {
   background: #e0e3dc;
+}
+
+@media (max-width: 640px) {
+  header {
+    padding: 16px 14px;
+  }
+
+  header h1 {
+    font-size: 1.05rem;
+  }
+
+  #badges {
+    gap: 4px;
+  }
+
+  .mode-control {
+    gap: 3px;
+    padding: 3px 5px;
+  }
+
+  .mode-caption {
+    font-size: 0.52rem;
+  }
+
+  .mode-switch {
+    width: 31px;
+    height: 18px;
+  }
+
+  .mode-slider::before {
+    width: 12px;
+    height: 12px;
+    left: 3px;
+    top: 3px;
+  }
+
+  .mode-switch input:checked + .mode-slider::before {
+    transform: translateX(13px);
+  }
+
+  .sound-toggle {
+    padding: 4px 7px;
+    font-size: 0.9rem;
+  }
+
+  .badge {
+    padding: 4px 7px;
+    font-size: 0.65rem;
+  }
+
+  main {
+    padding: 88px 10px 18px;
+  }
+
+  #mood-label {
+    margin-bottom: 14px;
+    padding: 8px 18px;
+    font-size: 1.15rem;
+  }
+
+  .sensors {
+    gap: 6px;
+  }
+
+  .sensor-card {
+    min-width: 0;
+    padding: 9px 5px;
+    border-radius: 13px;
+    gap: 2px;
+  }
+
+  .sensor-card .icon {
+    font-size: 1.15rem;
+  }
+
+  .sensor-card .label {
+    font-size: 0.62rem;
+    line-height: 1.1;
+  }
+
+  .sensor-card .value {
+    font-size: 1rem;
+  }
+
+  .bar {
+    height: 5px;
+    margin-top: 3px;
+  }
+
+  .countdown,
+  .ultima-rega {
+    font-size: 0.55rem;
+    line-height: 1.1;
+  }
+
+  #footer-note {
+    font-size: 0.65rem;
+    margin-top: 8px;
+  }
+
+  .config-modal {
+    padding: 18px 16px 16px;
+    border-radius: 14px;
+  }
+
+  .config-field {
+    font-size: 0.78rem;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    transition-duration: 0.01ms !important;
+    animation-duration: 0.01ms !important;
+  }
 }

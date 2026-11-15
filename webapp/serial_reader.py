@@ -73,6 +73,7 @@ class SharedState:
         # no front-end (GET/POST /api/simulation).
         self.sim_mode = "random"
         self.sim_manual = {"luz": 600, "solo": 400, "temperatura": 23.0}
+        self.run_mode = "live"
         self.mood = "feliz"
         self.connected = False
         self.simulated = False
@@ -216,6 +217,35 @@ class SharedState:
         with self._lock:
             self.sim_mode = mode
 
+    def set_run_mode(self, mode):
+        """Seleciona a fonte principal das leituras: ESP32 real ou demo."""
+        if mode not in ("live", "simulation"):
+            raise ValueError("Modo precisa ser 'live' ou 'simulation'")
+        with self._lock:
+            changed = self.run_mode != mode
+            self.run_mode = mode
+            return changed
+
+    def get_run_mode(self):
+        with self._lock:
+            return self.run_mode
+
+    def update_simulated(self, *, mood, luz, solo, temperatura):
+        """Atualiza um quadro coerente do carrossel sem consultar o ESP32."""
+        with self._lock:
+            self.luz = luz
+            self.solo = solo
+            self.temperatura = temperatura
+            self.festa = mood == "festa"
+            self.critico = mood == "doente"
+            self.seca_since = None
+            self.dormindo_since = None
+            self.mood = mood
+            self.connected = False
+            self.simulated = True
+            self.last_update = time.time()
+            self.raw_line = f"(simulacao: {mood})"
+
     def set_sim_manual_values(self, *, luz=None, solo=None, temperatura=None):
         """Atualiza os valores usados pelo modo simulacao "manual"."""
         with self._lock:
@@ -268,6 +298,7 @@ class SharedState:
                 "ultima_rega_s_atras": ultima_rega_s_atras,
                 "connected": self.connected and not stale,
                 "simulated": self.simulated,
+                "run_mode": self.run_mode,
                 "stale": stale,
                 "last_update": self.last_update,
                 "raw_line": self.raw_line,

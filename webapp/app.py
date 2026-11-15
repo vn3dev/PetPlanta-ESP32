@@ -1,19 +1,10 @@
 # -*- coding: utf-8 -*-
-"""
-PetPlanta Web - app Flask que mostra o bichinho-planta animado e os dados
-dos sensores em tempo real, lendo a porta serial do Arduino (ou simulando
-dados se nenhum Arduino for encontrado).
-
-Rodar:
-    python app.py
-
-Depois abra http://localhost:5000 no navegador.
-"""
-
+"""PetPlanta Flask -- mesma interface do projeto original, agora via Wi-Fi."""
 from flask import Flask, jsonify, render_template, request
 
 import config
-from serial_reader import start_background_reader
+import audio_player
+from wifi_reader import start_background_reader
 
 app = Flask(__name__)
 state = start_background_reader()
@@ -35,6 +26,56 @@ def index():
 @app.route("/api/state")
 def api_state():
     return jsonify(state.to_dict())
+
+
+@app.route("/api/mode", methods=["GET"])
+def api_mode_get():
+    return jsonify({"mode": state.get_run_mode()})
+
+
+@app.route("/api/mode", methods=["POST"])
+def api_mode_post():
+    body = request.get_json(silent=True)
+    mode = body.get("mode") if isinstance(body, dict) else None
+    if mode not in ("live", "simulation"):
+        return jsonify({"error": "'mode' precisa ser 'live' ou 'simulation'."}), 400
+
+    if mode in ("live", "simulation"):
+        # A próxima leitura real assume novamente o controle do humor e dos
+        # sensores; não deixamos uma música de demonstração presa no fundo.
+        audio_player.set_run_mode(mode)
+        state.set_festa(False)
+        state.set_run_mode(mode)
+    return jsonify({"mode": state.get_run_mode()})
+
+
+@app.route("/api/audio", methods=["GET"])
+def api_audio_get():
+    return jsonify({"enabled": audio_player.is_enabled()})
+
+
+@app.route("/api/audio", methods=["POST"])
+def api_audio_post():
+    body = request.get_json(silent=True)
+    if not isinstance(body, dict) or not isinstance(body.get("enabled"), bool):
+        return jsonify({"error": "'enabled' precisa ser booleano."}), 400
+    audio_player.set_enabled(body["enabled"])
+    return jsonify({"enabled": audio_player.is_enabled()})
+
+
+@app.route("/api/heartbeat", methods=["POST"])
+def api_heartbeat():
+    body = request.get_json(silent=True)
+    if not isinstance(body, dict):
+        return jsonify({"error": "Corpo da requisicao invalido."}), 400
+    client_id = body.get("client_id")
+    if not isinstance(client_id, str) or not client_id.strip():
+        return jsonify({"error": "'client_id' e obrigatorio."}), 400
+    # Somente o navegador do notebook controla o audio MCI. Celulares mantem
+    # seus proprios elementos Audio no frontend e nao prolongam a sessao local.
+    if body.get("desktop") is True:
+        audio_player.set_client_presence(client_id, body.get("active", True) is not False)
+    return jsonify({"ok": True})
 
 
 @app.route("/api/config", methods=["GET"])
@@ -61,19 +102,15 @@ def api_simulation_get():
 
 @app.route("/api/simulation", methods=["POST"])
 def api_simulation_post():
-    """Troca o modo de simulacao ("random"/"manual") e/ou os valores usados
-    pelo modo manual. So tem efeito pratico enquanto o app estiver rodando
-    sem Arduino conectado (state.simulated == True), mas aceita a chamada de
-    qualquer forma - se um Arduino estiver conectado, os valores ficam
-    guardados sem uso ate cair em simulacao."""
+    """Guarda as configuracoes de simulacao para compatibilidade com a interface.
+    No modo Wi-Fi, sem o ESP32, o app nao inventa leituras.
+    """
     body = request.get_json(silent=True)
     if not isinstance(body, dict):
         return jsonify({"error": "Corpo da requisicao invalido (esperado JSON)."}), 400
-
     mode = body.get("sim_mode")
     if mode not in ("random", "manual"):
         return jsonify({"error": "'sim_mode' precisa ser 'random' ou 'manual'."}), 400
-
     manual_values = {}
     bounds = {
         "luz": ("Luz", 0, 1023),
@@ -89,14 +126,16 @@ def api_simulation_post():
             if not (lo <= v <= hi):
                 return jsonify({"error": f"'{label}' precisa estar entre {lo} e {hi}"}), 400
             manual_values[key] = v
-
     state.set_sim_mode(mode)
     if manual_values:
         state.set_sim_manual_values(**manual_values)
-
     return jsonify({"sim_mode": state.sim_mode, "sim_manual": dict(state.sim_manual)})
 
-
 if __name__ == "__main__":
-    print(f"[PetPlanta] Servidor em http://localhost:{config.PORT}")
-    app.run(host=config.HOST, port=config.PORT, debug=config.DEBUG, use_reloader=False)
+    print("PetPlanta iniciado!")
+    app.run(
+        host="0.0.0.0",
+        port=80,
+        debug=False,    
+        use_reloader=False
+    )

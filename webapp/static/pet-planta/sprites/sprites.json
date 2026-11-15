@@ -1,0 +1,317 @@
+{
+  "cell": 64,
+  "frames": 8,
+  "rows": 1,
+  "direction": "south",
+  "default": "happy",
+  "states": {
+    "happy": {
+      "label": "feliz (padrao)",
+      "sheet": "sprites/happy/happy-sheet.png",
+      "frames": 8,
+      "frameDurationMs": 150
+    },
+    "party": {
+      "label": "modo festa",
+      "sheet": "sprites/party/party-sheet.png",
+      "frames": 16,
+      "frameDurationMs": 189.446,
+      "beat": {
+        "bpm": 79.178,
+        "firstDownbeatS": 2.1673,
+        "framesPerBeat": 4
+      },
+      "moves": {
+        "sweep": {
+          "sheet": "sprites/party/moves/sweep.png",
+          "frames": 8,
+          "loop": true
+        },
+        "swoon": {
+          "sheet": "sprites/party/moves/swoon.png",
+          "frames": 8,
+          "loop": true
+        },
+        "spin": {
+          "sheet": "sprites/party/moves/spin.png",
+          "frames": 4,
+          "loop": false
+        },
+        "stomp": {
+          "sheet": "sprites/party/moves/stomp.png",
+          "frames": 16,
+          "loop": true
+        },
+        "hunch": {
+          "sheet": "sprites/party/moves/hunch.png",
+          "frames": 4,
+          "loop": true
+        },
+        "raise": {
+          "sheet": "sprites/party/moves/raise.png",
+          "frames": 8,
+          "loop": true
+        },
+        "point": {
+          "sheet": "sprites/party/moves/point.png",
+          "frames": 8,
+          "loop": true
+        }
+      },
+      "timeline": [
+        { "fromBeat": -4, "toBeat": 2, "move": "sweep" },
+        { "fromBeat": 2, "toBeat": 6, "move": "swoon" },
+        { "fromBeat": 6, "toBeat": 7, "move": "spin" },
+        { "fromBeat": 7, "toBeat": 12, "move": "stomp" },
+        { "fromBeat": 243, "toBeat": 248, "move": "stomp" },
+        { "fromBeat": 248, "toBeat": 251, "move": "hunch" },
+        { "fromBeat": 251, "toBeat": 254, "move": "raise" },
+        { "fromBeat": 254, "toBeat": 258, "move": "point" }
+      ],
+      "timelineNote": "beats counted from beat.firstDownbeatS; inside a timeline entry the move plays (4 frames per beat, looping or once); elsewhere the regular party loop plays"
+    },
+    "sunny": {
+      "label": "curtindo o sol",
+      "sheet": "sprites/sunny/sunny-sheet.png",
+      "frames": 8,
+      "frameDurationMs": 170
+    },
+    "cold": {
+      "label": "com frio",
+      "sheet": "sprites/cold/cold-sheet.png",
+      "frames": 8,
+      "frameDurationMs": 80
+    },
+    "sleep": {
+      "label": "dormindo",
+      "sheet": "sprites/sleep/sleep-sheet.png",
+      "frames": 8,
+      "frameDurationMs": 240
+    },
+    "dry": {
+      "label": "seca",
+      "sheet": "sprites/dry/dry-sheet.png",
+      "frames": 8,
+      "frameDurationMs": 220
+    },
+    "sick": {
+      "label": "doente",
+      "sheet": "sprites/sick/sick-sheet.png",
+      "frames": 8,
+      "frameDurationMs": 180
+    }
+  },
+  "transitions": {
+    "happy>party": {
+      "sheet": "sprites/transitions/happy-to-party.png",
+      "frames": 8,
+      "frameDurationMs": 70
+    },
+    "happy>sunny": {
+      "sheet": "sprites/transitions/happy-to-sunny.png",
+      "frames": 8,
+      "frameDurationMs": 70
+    },
+    "happy>cold": {
+      "sheet": "sprites/transitions/happy-to-cold.png",
+      "frames": 8,
+      "frameDurationMs": 70
+    },
+    "happy>sleep": {
+      "sheet": "sprites/transitions/happy-to-sleep.png",
+      "frames": 8,
+      "frameDurationMs": 70
+    },
+    "happy>dry": {
+      "sheet": "sprites/transitions/happy-to-dry.png",
+      "frames": 8,
+      "frameDurationMs": 70
+    },
+    "happy>sick": {
+      "sheet": "sprites/transitions/happy-to-sick.png",
+      "frames": 8,
+      "frameDurationMs": 70
+    },
+    "party>happy": {
+      "sheet": "sprites/transitions/party-to-happy.png",
+      "frames": 8,
+      "frameDurationMs": 70
+    },
+    "party>sunny": {
+      "sheet": "sprites/transitions/party-to-sunny.png",
+      "frames": 8,
+      "frameDurationMs": 70
+    },
+    "party>cold": {
+      "sheet": "sprites/transitions/party-to-cold.png",
+      "frames": 8,
+      "frameDurationMs": 70
+    },
+    "party>sleep": {
+      "sheet": "sprites/transitions/party-to-sleep.png",
+      "frames": 8,
+      "frameDurationMs": 70
+    },
+    "party>dry": {
+      "sheet": "sprites/transitions/party-to-dry.png",
+      "frames": 8,
+      "frameDurationMs": 70
+    },
+    "party>sick": {
+      "sheet": "sprites/transitions/party-to-sick.png",
+      "frames": 8,
+      "frameDurationMs": 70
+    },
+    "sunny>happy": {
+      "sheet": "sprites/transitions/sunny-to-happy.png",
+      "frames": 8,
+      "frameDurationMs": 70
+    },
+    "sunny>party": {
+      "sheet": "sprites/transitions/sunny-to-party.png",
+      "frames": 8,
+      "frameDurationMs": 70
+    },
+    "sunny>cold": {
+      "sheet": "sprites/transitions/sunny-to-cold.png",
+      "frames": 8,
+      "frameDurationMs": 70
+    },
+    "sunny>sleep": {
+      "sheet": "sprites/transitions/sunny-to-sleep.png",
+      "frames": 8,
+      "frameDurationMs": 70
+    },
+    "sunny>dry": {
+      "sheet": "sprites/transitions/sunny-to-dry.png",
+      "frames": 8,
+      "frameDurationMs": 70
+    },
+    "sunny>sick": {
+      "sheet": "sprites/transitions/sunny-to-sick.png",
+      "frames": 8,
+      "frameDurationMs": 70
+    },
+    "cold>happy": {
+      "sheet": "sprites/transitions/cold-to-happy.png",
+      "frames": 8,
+      "frameDurationMs": 70
+    },
+    "cold>party": {
+      "sheet": "sprites/transitions/cold-to-party.png",
+      "frames": 8,
+      "frameDurationMs": 70
+    },
+    "cold>sunny": {
+      "sheet": "sprites/transitions/cold-to-sunny.png",
+      "frames": 8,
+      "frameDurationMs": 70
+    },
+    "cold>sleep": {
+      "sheet": "sprites/transitions/cold-to-sleep.png",
+      "frames": 8,
+      "frameDurationMs": 70
+    },
+    "cold>dry": {
+      "sheet": "sprites/transitions/cold-to-dry.png",
+      "frames": 8,
+      "frameDurationMs": 70
+    },
+    "cold>sick": {
+      "sheet": "sprites/transitions/cold-to-sick.png",
+      "frames": 8,
+      "frameDurationMs": 70
+    },
+    "sleep>happy": {
+      "sheet": "sprites/transitions/sleep-to-happy.png",
+      "frames": 8,
+      "frameDurationMs": 70
+    },
+    "sleep>party": {
+      "sheet": "sprites/transitions/sleep-to-party.png",
+      "frames": 8,
+      "frameDurationMs": 70
+    },
+    "sleep>sunny": {
+      "sheet": "sprites/transitions/sleep-to-sunny.png",
+      "frames": 8,
+      "frameDurationMs": 70
+    },
+    "sleep>cold": {
+      "sheet": "sprites/transitions/sleep-to-cold.png",
+      "frames": 8,
+      "frameDurationMs": 70
+    },
+    "sleep>dry": {
+      "sheet": "sprites/transitions/sleep-to-dry.png",
+      "frames": 8,
+      "frameDurationMs": 70
+    },
+    "sleep>sick": {
+      "sheet": "sprites/transitions/sleep-to-sick.png",
+      "frames": 8,
+      "frameDurationMs": 70
+    },
+    "dry>happy": {
+      "sheet": "sprites/transitions/dry-to-happy.png",
+      "frames": 8,
+      "frameDurationMs": 70
+    },
+    "dry>party": {
+      "sheet": "sprites/transitions/dry-to-party.png",
+      "frames": 8,
+      "frameDurationMs": 70
+    },
+    "dry>sunny": {
+      "sheet": "sprites/transitions/dry-to-sunny.png",
+      "frames": 8,
+      "frameDurationMs": 70
+    },
+    "dry>cold": {
+      "sheet": "sprites/transitions/dry-to-cold.png",
+      "frames": 8,
+      "frameDurationMs": 70
+    },
+    "dry>sleep": {
+      "sheet": "sprites/transitions/dry-to-sleep.png",
+      "frames": 8,
+      "frameDurationMs": 70
+    },
+    "dry>sick": {
+      "sheet": "sprites/transitions/dry-to-sick.png",
+      "frames": 8,
+      "frameDurationMs": 70
+    },
+    "sick>happy": {
+      "sheet": "sprites/transitions/sick-to-happy.png",
+      "frames": 8,
+      "frameDurationMs": 70
+    },
+    "sick>party": {
+      "sheet": "sprites/transitions/sick-to-party.png",
+      "frames": 8,
+      "frameDurationMs": 70
+    },
+    "sick>sunny": {
+      "sheet": "sprites/transitions/sick-to-sunny.png",
+      "frames": 8,
+      "frameDurationMs": 70
+    },
+    "sick>cold": {
+      "sheet": "sprites/transitions/sick-to-cold.png",
+      "frames": 8,
+      "frameDurationMs": 70
+    },
+    "sick>sleep": {
+      "sheet": "sprites/transitions/sick-to-sleep.png",
+      "frames": 8,
+      "frameDurationMs": 70
+    },
+    "sick>dry": {
+      "sheet": "sprites/transitions/sick-to-dry.png",
+      "frames": 8,
+      "frameDurationMs": 70
+    }
+  },
+  "transitionNote": "play transitions[from>to] once, then loop states[to] from frame 0 (last transition frame == frame 7 of the target loop)"
+}

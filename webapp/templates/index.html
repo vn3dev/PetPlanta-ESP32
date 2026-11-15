@@ -10,9 +10,15 @@
   <header>
     <h1>&#127807; PetPlanta</h1>
     <div id="badges">
-      <span id="badge-conexao" class="badge offline">checando...</span>
-      <span id="badge-sim" class="badge sim hidden">modo simulacao</span>
-      <button id="btn-sim" class="icon-btn hidden" title="Simulação" aria-label="Simulação">&#127919;</button>
+      <div class="mode-control" title="Alternar fonte dos dados">
+        <span class="mode-caption" id="mode-live-label">LIVE</span>
+        <label class="mode-switch" aria-label="Alternar entre modo live e simulação">
+          <input id="mode-switch" type="checkbox" role="switch" aria-checked="false">
+          <span class="mode-slider"></span>
+        </label>
+        <span class="mode-caption" id="mode-sim-label">SIM</span>
+      </div>
+      <button id="btn-audio" class="sound-toggle" type="button" title="Ativar sons e vibração" aria-label="Ativar sons e vibração" aria-pressed="false">&#128263;</button>
       <button id="btn-config" class="icon-btn" title="Configuracoes" aria-label="Configuracoes">&#9881;&#65039;</button>
     </div>
   </header>
@@ -149,10 +155,11 @@
   </div>
 
   <main>
-    <section class="pet-card">
-      <img id="pet-gif" src="{{ url_for('static', filename='gifs/loop_feliz.gif') }}" alt="PetPlanta">
-      <div id="mood-label">Feliz</div>
+  <section class="pet-card">
+      <canvas id="pet-canvas" width="256" height="144" role="img" aria-label="PetPlanta"></canvas>
     </section>
+
+    <div id="mood-label" aria-live="polite">Feliz</div>
 
     <section class="sensors">
       <div class="sensor-card" id="card-luz">
@@ -184,10 +191,20 @@
   <script>
     window.MOOD_LABELS = {{ mood_labels | tojson }};
     window.MOOD_BG = {{ mood_bg | tojson }};
+    window.PET_MOOD_MAP = {
+      feliz: "happy",
+      festa: "party",
+      oculos: "sunny",
+      frio: "cold",
+      dormindo: "sleep",
+      seca: "dry",
+      doente: "sick"
+    };
     window.TRANSITION_MS = {{ transition_ms }};
     window.TRANSITION_FRAMES = {{ transition_frames }};
     window.FRAME_MS = {{ frame_ms }};
   </script>
-  <script src="{{ url_for('static', filename='js/app.js') }}?v=19"></script>
+  <script src="{{ url_for('static', filename='pet-planta/sprites/pet-planta.js') }}?v=2"></script>
+  <script src="{{ url_for('static', filename='js/app.js') }}?v=21"></script>
 </body>
 </html>

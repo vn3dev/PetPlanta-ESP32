@@ -1,9 +1,10 @@
 (function () {
-  const img = document.getElementById("pet-gif");
+  const canvas = document.getElementById("pet-canvas");
   const moodLabel = document.getElementById("mood-label");
   const badgeConexao = document.getElementById("badge-conexao");
   const badgeSim = document.getElementById("badge-sim");
   const lastUpdateEl = document.getElementById("last-update");
+  const modeSwitch = document.getElementById("mode-switch");
 
   const valLuz = document.getElementById("val-luz");
   const valSolo = document.getElementById("val-solo");
@@ -18,6 +19,30 @@
   const ultimaRegaEl = document.getElementById("ultima-rega");
 
   const btnSim = document.getElementById("btn-sim");
+  const btnAudio = document.getElementById("btn-audio");
+  const isMobileDevice = /Android|iPhone|iPad|iPod|Mobile/i.test(navigator.userAgent);
+  const clientId = (window.crypto && crypto.randomUUID)
+    ? crypto.randomUUID()
+    : `petplanta-${Date.now()}-${Math.random().toString(16).slice(2)}`;
+
+  const SOUND_FILES = {
+    feliz: "feliz.wav",
+    seca: "seco.wav",
+    doente: "critico.wav",
+    frio: "frio.wav",
+    dormindo: "dormindo.mp3",
+    oculos: "sol.wav",
+    festa: "Festa.mp3",
+  };
+  const VIBRATION_PATTERNS = {
+    feliz: 90,
+    seca: [140, 80, 140],
+    doente: [300, 100, 300, 100, 500],
+    frio: [180, 80, 180],
+    dormindo: 60,
+    oculos: [80, 70, 80],
+    festa: [100, 70, 100, 70, 100],
+  };
 
   // Escalas usadas so para desenhar a barra de progresso de cada sensor
   // (nao tem relacao com os thresholds de mood em config.py).
@@ -70,98 +95,185 @@
     return BAR_COLOR_GREEN;
   }
 
-  let currentMood = null;
-  let transitioning = false;
-  let rafId = null;
+  let petPlayer = null;
+  let playerReady = false;
+  let latestMood = null;
+  let hasReceivedMood = false;
+  let soundEnabled = false;
+  let moodAudio = null;
+  let audioToggleBusy = false;
+  let audioGeneration = 0;
+  let pollInFlight = false;
+  let modeChangeInFlight = false;
+  let modeGeneration = 0;
 
-  function loopUrl(mood) {
-    return `/static/gifs/loop_${mood}.gif`;
+  function updateAudioButton() {
+    if (!btnAudio) return;
+    btnAudio.textContent = soundEnabled ? "🔊" : "🔇";
+    btnAudio.title = soundEnabled
+      ? (isMobileDevice ? "Desativar sons e vibração" : "Desativar áudio do notebook")
+      : (isMobileDevice ? "Ativar sons e vibração" : "Ativar áudio do notebook");
+    btnAudio.setAttribute("aria-label", btnAudio.title);
+    btnAudio.setAttribute("aria-pressed", String(soundEnabled));
+    btnAudio.classList.toggle("active", soundEnabled);
   }
 
-  function transitionFrameUrl(fromMood, toMood, frameIdx) {
-    return `/static/gifs/transition_${fromMood}_to_${toMood}/frame_${frameIdx}.png`;
+  function soundUrl(mood) {
+    const file = SOUND_FILES[mood];
+    return file ? `/static/audio/${file}` : null;
   }
 
-  // Pre-carrega os loops e TODOS os frames PNG de transicao na memoria do
-  // navegador assim que a pagina abre, pra quando o mood mudar de verdade
-  // tudo ja estar em cache e a troca ser instantanea (sem espera de rede).
-  function preloadAssets() {
-    const moods = (window.MOOD_LABELS && Object.keys(window.MOOD_LABELS)) || [];
-    const steps = window.TRANSITION_FRAMES || 8;
-
-    moods.forEach((m) => {
-      new Image().src = loopUrl(m);
-    });
-
-    moods.forEach((a) => {
-      moods.forEach((b) => {
-        if (a === b) return;
-        for (let i = 1; i <= steps; i++) {
-          new Image().src = transitionFrameUrl(a, b, i);
-        }
-      });
-    });
+  function vibrateForMood(mood) {
+    if (!soundEnabled || !isMobileDevice || !navigator.vibrate) return;
+    navigator.vibrate(VIBRATION_PATTERNS[mood] || 100);
   }
 
-  // Toca a transicao "na mao": em vez de soltar um GIF animado e deixar o
-  // navegador decidir quando trocar de frame (timing de GIF nativo NAO e
-  // confiavel/sincronizavel com JS - cada engine arredonda/decodifica os
-  // delays do seu jeito, sem garantia de ficar em fase com o relogio da
-  // pagina), o app troca a imagem do bichinho (frames PNG estaticos) num
-  // loop de requestAnimationFrame baseado no tempo decorrido desde o
-  // inicio da transicao. O fundo da pagina fica fixo (branco) - so a
-  // imagem do bichinho muda.
-  function playTransition(fromMood, toMood) {
-    const steps = window.TRANSITION_FRAMES || 8;
-    const frameMs = window.FRAME_MS || 90;
-    const totalMs = steps * frameMs;
+  function playMoodSound(mood) {
+    // No notebook, o áudio é reproduzido exclusivamente pelo Python/MCI.
+    // Isso evita que o MP3 toque duas vezes na mesma máquina.
+    if (!soundEnabled || !isMobileDevice) return;
+    const url = soundUrl(mood);
+    if (!url) return;
 
-    if (rafId) {
-      cancelAnimationFrame(rafId);
-      rafId = null;
+    stopBrowserAudio();
+    if (!moodAudio) moodAudio = new Audio();
+    if (petPlayer && typeof petPlayer.syncAudio === "function") {
+      petPlayer.syncAudio(moodAudio);
     }
-
-    const startTime = performance.now();
-    let lastFrameIdx = 0;
-
-    const tick = () => {
-      const elapsed = performance.now() - startTime;
-      const frameIdx = Math.min(steps, Math.floor(elapsed / frameMs) + 1);
-
-      if (frameIdx !== lastFrameIdx) {
-        lastFrameIdx = frameIdx;
-        img.src = transitionFrameUrl(fromMood, toMood, frameIdx);
-      }
-
-      if (elapsed < totalMs) {
-        rafId = requestAnimationFrame(tick);
-      } else {
-        rafId = null;
-        img.src = loopUrl(toMood);
-        currentMood = toMood;
-        transitioning = false;
-      }
-    };
-
-    tick();
+    moodAudio.src = `${url}?v=${audioGeneration}`;
+    moodAudio.currentTime = 0;
+    moodAudio.loop = mood === "festa";
+    // Efeitos curtos ficam abaixo da música principal para não assustar o
+    // visitante nem mascarar o áudio ambiente.
+    moodAudio.volume = 0.22;
+    moodAudio.play().catch(() => {
+      // O navegador pode bloquear o áudio se a ativação não tiver vindo de
+      // uma interação recente do usuário. O botão de sons permite liberar isso.
+    });
+    vibrateForMood(mood);
   }
 
-  function applyMood(newMood, animate) {
+  function stopBrowserAudio() {
+    audioGeneration += 1;
+    if (moodAudio) {
+      moodAudio.pause();
+      moodAudio.currentTime = 0;
+      moodAudio.removeAttribute("src");
+      moodAudio.load();
+    }
+  }
+
+  function silenceBrowserAudio() {
+    stopBrowserAudio();
+    if (navigator.vibrate) navigator.vibrate(0);
+  }
+
+  async function toggleAudio() {
+    if (audioToggleBusy) return;
+    audioToggleBusy = true;
+    const previousEnabled = soundEnabled;
+    const nextEnabled = !soundEnabled;
+
+    try {
+      if (!isMobileDevice) {
+        soundEnabled = nextEnabled;
+        updateAudioButton();
+        const res = await fetch("/api/audio", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ enabled: nextEnabled }),
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || "Nao foi possivel alterar o audio.");
+        soundEnabled = data.enabled;
+        updateAudioButton();
+        return;
+      }
+
+      soundEnabled = nextEnabled;
+      updateAudioButton();
+
+      if (soundEnabled) {
+        // Essa chamada acontece dentro do clique e libera o audio em browsers
+        // moveis que bloqueiam autoplay.
+        playMoodSound(latestMood || "feliz");
+      } else if (moodAudio) {
+        stopBrowserAudio();
+        if (navigator.vibrate) navigator.vibrate(0);
+      }
+    } catch (err) {
+      soundEnabled = previousEnabled;
+      updateAudioButton();
+      console.error(err);
+    } finally {
+      audioToggleBusy = false;
+    }
+  }
+
+  async function syncAudioPreference() {
+    if (isMobileDevice) {
+      updateAudioButton();
+      return;
+    }
+    try {
+      const res = await fetch("/api/audio", { cache: "no-store" });
+      const data = await res.json();
+      soundEnabled = Boolean(data.enabled);
+    } catch (err) {
+      soundEnabled = false;
+    }
+    updateAudioButton();
+  }
+
+  function sendHeartbeat(active = true) {
+    if (isMobileDevice) return;
+    const payload = JSON.stringify({ client_id: clientId, desktop: true, active });
+    if (!active && navigator.sendBeacon) {
+      navigator.sendBeacon(
+        "/api/heartbeat",
+        new Blob([payload], { type: "application/json" })
+      );
+      return;
+    }
+    fetch("/api/heartbeat", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: payload,
+      cache: "no-store",
+    }).catch(() => {});
+  }
+
+  // O player novo desenha a planta e o cenário no mesmo canvas. Ele mantém a
+  // transição corrente, enfileira apenas o último pedido e anima partículas
+  // sem depender do timing de GIF do navegador.
+  async function initPetPlayer() {
+    if (!canvas || !window.PetPlanta) return;
+    try {
+      petPlayer = await new PetPlanta(canvas, {
+        base: "/static/pet-planta/sprites/",
+        scene: true,
+        ditherMs: 360,
+      }).load();
+      petPlayer.start("happy");
+      playerReady = true;
+      petPlayer.setMood((window.PET_MOOD_MAP && window.PET_MOOD_MAP[latestMood]) || "happy");
+    } catch (err) {
+      console.error("Nao foi possivel carregar os assets da PetPlanta", err);
+    }
+  }
+
+  function applyMood(newMood) {
+    const previousMood = latestMood;
+    latestMood = newMood;
     const label = (window.MOOD_LABELS && window.MOOD_LABELS[newMood]) || newMood;
     moodLabel.textContent = label;
+    const visualMood = (window.PET_MOOD_MAP && window.PET_MOOD_MAP[newMood]) || "happy";
+    if (playerReady) petPlayer.setMood(visualMood);
 
-    if (!animate || currentMood === null) {
-      img.src = loopUrl(newMood);
-      currentMood = newMood;
-      return;
+    if (hasReceivedMood && previousMood !== newMood) {
+      playMoodSound(newMood);
     }
-
-    if (newMood === currentMood || transitioning) {
-      return;
-    }
-
-    transitioning = true;
-    playTransition(currentMood, newMood);
+    hasReceivedMood = true;
   }
 
   function fmt(value, suffix, digits) {
@@ -234,9 +346,13 @@
   }
 
   async function poll() {
+    if (pollInFlight || modeChangeInFlight) return;
+    pollInFlight = true;
+    const requestGeneration = modeGeneration;
     try {
       const res = await fetch("/api/state", { cache: "no-store" });
       const data = await res.json();
+      if (requestGeneration !== modeGeneration || modeChangeInFlight) return;
 
       valLuz.textContent = fmt(data.luz, "");
       valSolo.textContent = fmt(data.solo, "");
@@ -254,15 +370,12 @@
       setCountdown(countdownSolo, data.seca_restante_s);
       setUltimaRega(ultimaRegaEl, data.ultima_rega_s_atras);
 
-      if (data.connected) {
-        badgeConexao.textContent = "conectado";
-        badgeConexao.className = "badge online";
-      } else {
-        badgeConexao.textContent = "sem leituras recentes";
-        badgeConexao.className = "badge offline";
+      const simulationMode = data.run_mode === "simulation";
+      if (modeSwitch) {
+        modeSwitch.checked = simulationMode;
+        modeSwitch.setAttribute("aria-checked", String(simulationMode));
+        modeSwitch.classList.remove("error");
       }
-      badgeSim.classList.toggle("hidden", !data.simulated);
-      if (btnSim) btnSim.classList.toggle("hidden", !data.simulated);
       syncSimPanelFromState(data);
 
       if (data.last_update) {
@@ -270,12 +383,49 @@
         lastUpdateEl.textContent = d.toLocaleTimeString();
       }
 
-      applyMood(data.mood, true);
+      applyMood(data.mood);
     } catch (err) {
-      badgeConexao.textContent = "erro de conexao";
-      badgeConexao.className = "badge offline";
+      if (modeSwitch) modeSwitch.classList.add("error");
+      console.error("Falha ao atualizar o estado da PetPlanta", err);
+    } finally {
+      pollInFlight = false;
     }
   }
+
+  async function changeRunMode() {
+    if (!modeSwitch) return;
+    const mode = modeSwitch.checked ? "simulation" : "live";
+    const previousMode = mode === "simulation" ? "live" : "simulation";
+    modeGeneration += 1;
+    modeChangeInFlight = true;
+    modeSwitch.disabled = true;
+    // A troca de fonte corta imediatamente qualquer audio da fonte anterior.
+    silenceBrowserAudio();
+    try {
+      const res = await fetch("/api/mode", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ mode }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "Nao foi possivel alterar o modo.");
+      modeSwitch.checked = data.mode === "simulation";
+      modeSwitch.setAttribute("aria-checked", String(modeSwitch.checked));
+      await poll();
+    } catch (err) {
+      modeSwitch.checked = previousMode === "simulation";
+      modeSwitch.setAttribute("aria-checked", String(modeSwitch.checked));
+      console.error(err);
+    } finally {
+      modeChangeInFlight = false;
+      modeSwitch.disabled = false;
+    }
+  }
+
+  if (modeSwitch) modeSwitch.addEventListener("change", changeRunMode);
+
+  if (btnAudio) btnAudio.addEventListener("click", toggleAudio);
+  syncAudioPreference();
 
   // --- Tela de configuracoes (limiares editaveis) ---
   const btnConfig = document.getElementById("btn-config");
@@ -472,7 +622,10 @@
     if (ev.key === "Escape" && !simOverlay.classList.contains("hidden")) closeSimModal();
   });
 
-  preloadAssets();
+  initPetPlayer();
+  sendHeartbeat();
+  setInterval(() => sendHeartbeat(), 2000);
+  window.addEventListener("pagehide", () => sendHeartbeat(false));
   poll();
   setInterval(poll, 2000);
 })();

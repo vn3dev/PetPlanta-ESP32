@@ -1,0 +1,24 @@
+{
+  "state": "party",
+  "label": "modo festa",
+  "image": "party-sheet.png",
+  "frameWidth": 64,
+  "frameHeight": 64,
+  "frames": 16,
+  "columns": 16,
+  "rows": 1,
+  "frameDurationMs": 189.446,
+  "loop": true,
+  "anchor": {
+    "x": 32,
+    "y": 60,
+    "note": "bottom-center of the pot, fixed in all frames"
+  },
+  "method": "code_drawn",
+  "generator": "tools/gen_plant.py",
+  "beat": {
+    "bpm": 79.178,
+    "firstDownbeatS": 2.1673,
+    "framesPerBeat": 4
+  }
+}

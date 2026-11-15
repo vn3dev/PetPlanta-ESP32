@@ -24,8 +24,8 @@ import os
 # No Windows normalmente e algo como "COM3", "COM4", etc.
 # Fixado em COM6 (porta confirmada do seu Arduino). Pode trocar aqui ou via
 # variavel de ambiente PETPLANTA_PORT antes de rodar "python app.py".
-SERIAL_PORT = os.environ.get("PETPLANTA_PORT") or "COM6"
-SERIAL_BAUD = int(os.environ.get("PETPLANTA_BAUD", "9600"))  # igual ao Serial.begin(9600) do .ino
+SERIAL_PORT = os.environ.get("PETPLANTA_PORT") or "COM8"
+SERIAL_BAUD = int(os.environ.get("PETPLANTA_BAUD", "115200"))
 
 # Se nao conseguir abrir a porta serial em ate N segundos, cai em modo simulacao
 # (dados ficticios variando aleatoriamente) so para a interface nao ficar vazia.
@@ -45,7 +45,7 @@ SOLO_SECO_MAX = 250        # abaixo disso: solo seco (seca)
 
 # Temperatura do ar (DHT11), graus Celsius.
 TEMP_FRIO_MAX = 15.0       # abaixo disso: com frio
-TEMP_DOENTE_MIN = 40.0     # acima disso: calor extremo -> planta fica doente
+TEMP_DOENTE_MIN = 40.0     # acima disso: calor extremo -> planta fica com calor
 
 # --- Estado critico (LED da porta 10 + buzzer de alarme no Arduino) ---
 # A planta entra em estado critico quando QUALQUER uma destas acontece:
